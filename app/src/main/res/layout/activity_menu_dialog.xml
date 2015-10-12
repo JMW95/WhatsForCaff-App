@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_full_holo_dark"
+        android:gravity="center_vertical"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/txt_update_link"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_alignLeft="@+id/menu_pager"
+            android:layout_alignRight="@+id/menu_pager"
+            android:background="@color/update_background"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="Tap here to download new version!"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/holo_red_light"
+            android:visibility="gone" />
+        
+        <android.support.v4.view.ViewPager
+            android:id="@+id/menu_pager"
+            android:layout_width="match_parent"
+            android:layout_below="@id/txt_update_link"
+            android:layout_height="450dp" />
+        
+        <Button
+            android:id="@+id/btn_dialog_dismiss"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/menu_pager"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="Dismiss" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/btn_dialog_dismiss"
+            android:background="?android:attr/dividerHorizontal" />
+
+    </RelativeLayout>
+
+</LinearLayout>
