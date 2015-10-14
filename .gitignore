@@ -1,6 +1,7 @@
 #built application files
 *.apk
 *.ap_
+!WhatsForCaff-*.apk
 
 # files for the dex VM
 *.dex
