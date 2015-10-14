@@ -35,8 +35,6 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 
 	private int[] wids;
 	private Context ctx;
-
-	private Date date;
 	
 	public MenuGetterTask(Context context){
 		this.ctx = context;
@@ -50,9 +48,7 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 		StringBuilder stringBuilder = new StringBuilder();
 		HttpClient httpClient = new DefaultHttpClient();
 
-		date = new Date();
-
-		long timestamp = date.getTime()/1000L;
+		long timestamp = new Date().getTime()/1000L;
 		
 		try{
 
@@ -62,10 +58,10 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 			HttpPost httpPost = new HttpPost("https://hypernerd.co.uk/caff/api");
 			List<NameValuePair> postData = new ArrayList<NameValuePair>();
 			postData.add(new BasicNameValuePair("timestamp",Long.toString(timestamp)));
-			postData.add(new BasicNameValuePair("source","Widget " + WFCService.VERSION));
+			postData.add(new BasicNameValuePair("source","Widget " + Util.VERSION));
 			
 			// load device_id from SharedPreferences
-			SharedPreferences sp = ctx.getSharedPreferences("menustore", Context.MODE_PRIVATE);
+			SharedPreferences sp = ctx.getSharedPreferences(Util.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
 			if(sp.contains("uuid")){
 				System.out.println("Loaded UUID: " + sp.getString("uuid", ""));
 				postData.add(new BasicNameValuePair("uuid", sp.getString("uuid", "")));
@@ -118,7 +114,7 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 	public void onPostExecute(JSONObject result){
 		
 		// store downloaded menu and device_id in SharedPreferences
-		SharedPreferences sp = ctx.getSharedPreferences("menustore", Context.MODE_PRIVATE);
+		SharedPreferences sp = ctx.getSharedPreferences(Util.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
 		Editor ed = sp.edit();
 		
 		if(result.has("mobileapp")){
@@ -138,9 +134,7 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 				e.printStackTrace();
 			}
 		}else{
-			SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
-			String dateStr = sdf.format(date);
-			ed.putString(dateStr, result.toString());
+			ed.putString(Util.getMenuDateString(), result.toString());
 			ed.commit();
 		}
 		

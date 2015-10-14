@@ -63,10 +63,10 @@ public class WhatsForCaffWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.txtItem, "Fetching menu...");
 
 			// get cached menu from shared prefs
-			SharedPreferences sp = context.getSharedPreferences("menustore", Context.MODE_PRIVATE);
+			SharedPreferences sp = context.getSharedPreferences(Util.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
 
-			SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
-			String dateStr = sdf.format(new Date());
+			String dateStr = Util.getMenuDateString();
+
 			if(sp.contains(dateStr)){
 				updateRemoteViews(context, views, new JSONObject(sp.getString(dateStr,"")));
 			}
@@ -83,7 +83,7 @@ public class WhatsForCaffWidgetProvider extends AppWidgetProvider {
 			boolean updateReady = false;
 			try{
 				JSONObject appInfo = menu.getJSONObject("mobileapp");
-				updateReady = !appInfo.getString("latest_version").equals(WFCService.VERSION);
+				updateReady = !appInfo.getString("latest_version").equals(Util.VERSION);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}

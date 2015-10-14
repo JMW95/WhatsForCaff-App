@@ -50,18 +50,15 @@ public class MenuDialog extends FragmentActivity{
 			}
 		});
 		
-		SharedPreferences sp = getSharedPreferences("menustore", Context.MODE_PRIVATE);
+		SharedPreferences sp = getSharedPreferences(Util.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
 
-		SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
-		String dateStr = sdf.format(new Date());
-
-		String jsonstr = sp.getString(dateStr, "");
+		String jsonstr = sp.getString(Util.getMenuDateString(), "");
 		// show update link if there is an update
 		try {
 			JSONObject json = new JSONObject(jsonstr);
 			final JSONObject appInfo = json.getJSONObject("mobileapp");
 			final String updateUrl = appInfo.getString("link");
-			if(!appInfo.getString("latest_version").equals(WFCService.VERSION)){
+			if(!appInfo.getString("latest_version").equals(Util.VERSION)){
 				View tv = this.findViewById(R.id.txt_update_link);
 				
 				DisplayMetrics metrics = this.getResources().getDisplayMetrics();

@@ -16,8 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class WFCService extends Service {
-
-	public static String VERSION = "0.62";
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId){
@@ -30,9 +28,10 @@ public class WFCService extends Service {
 		int[] ids = awm.getAppWidgetIds(new ComponentName(this, WhatsForCaffWidgetProvider.class));
 		
 		if(ids.length>0){ // if there are actually some widgets to update
-			SharedPreferences sp = this.getSharedPreferences("menustore", Context.MODE_PRIVATE);
-			SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
-			String dateStr = sdf.format(new Date());
+			SharedPreferences sp = this.getSharedPreferences(Util.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+
+			String dateStr = Util.getMenuDateString();
+
 			if(sp.contains(dateStr)) {
 				for(int i : ids){
 					int minHeight = awm.getAppWidgetOptions(i).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
