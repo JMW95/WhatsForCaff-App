@@ -1,6 +1,8 @@
 package jamiewood.whatsforcaff;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,18 +58,17 @@ public class WhatsForCaffWidgetProvider extends AppWidgetProvider {
 		
 		RemoteViews views = new RemoteViews(context.getPackageName(), layoutId);
 		try {
-			if(extras.containsKey("menu")){
-				updateRemoteViews(context, views, new JSONObject(extras.getString("menu")));
-			}else{
-				views.setTextViewText(R.id.txtTitle, "What's for Caff?");
-				views.setTextViewText(R.id.txtItem, "Fetching menu...");
-				
-				// get cached menu from shared prefs
-				SharedPreferences sp = context.getSharedPreferences("menustore", Context.MODE_PRIVATE);
-				if(sp.contains("menu")){
-					updateRemoteViews(context, views, new JSONObject(sp.getString("menu","")));
-				}
-				
+
+			views.setTextViewText(R.id.txtTitle, "What's for Caff?");
+			views.setTextViewText(R.id.txtItem, "Fetching menu...");
+
+			// get cached menu from shared prefs
+			SharedPreferences sp = context.getSharedPreferences("menustore", Context.MODE_PRIVATE);
+
+			SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
+			String dateStr = sdf.format(new Date());
+			if(sp.contains(dateStr)){
+				updateRemoteViews(context, views, new JSONObject(sp.getString(dateStr,"")));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -77,120 +78,119 @@ public class WhatsForCaffWidgetProvider extends AppWidgetProvider {
 	}
 	
 	public static void updateRemoteViews(Context context, RemoteViews views, JSONObject menu){
-			if(!menu.has("error")){
-				// CHECK IF AN UPDATE IS AVAILABLE
-				boolean updateReady = false;
+		if(!menu.has("error")){
+			// CHECK IF AN UPDATE IS AVAILABLE
+			boolean updateReady = false;
+			try{
+				JSONObject appInfo = menu.getJSONObject("mobileapp");
+				updateReady = !appInfo.getString("latest_version").equals(WFCService.VERSION);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+			Calendar cal = Calendar.getInstance();
+			String today = days[cal.get(Calendar.DAY_OF_WEEK)-1];
+
+			JSONObject menutoday;
+			String lunchstr = "";
+			String dinnerstr = "";
+			try{
+				menutoday = menu.getJSONObject(today);
+
+				// Lunch
 				try{
-					JSONObject appInfo = menu.getJSONObject("mobileapp");
-					updateReady = !appInfo.getString("latest_version").equals(WFCService.VERSION);
+					JSONObject lunch = menutoday.getJSONObject("lunch");
+					if(lunch.getString("type").equals("none")){
+						lunchstr = "No lunch today.";
+					}else if(lunch.getString("type").equals("brunch")){
+						lunchstr = "Brunch";
+					}else{
+						lunchstr = lunch.getString("main") + "\n" + lunch.getString("veg");
+					}
 				} catch (JSONException e) {
 					e.printStackTrace();
+					lunchstr = "Error parsing lunch menu!";
 				}
-				
-				String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-				
-				Calendar cal = Calendar.getInstance();
-				String today = days[cal.get(Calendar.DAY_OF_WEEK)-1];
-				
-				JSONObject menutoday;
-				String lunchstr = "";
-				String dinnerstr = "";
+
+				// Dinner
 				try{
-					menutoday = menu.getJSONObject(today);
-					
-					// Lunch
-					try{
-						JSONObject lunch = menutoday.getJSONObject("lunch");
-						if(lunch.getString("type").equals("none")){
-							lunchstr = "No lunch today.";
-						}else if(lunch.getString("type").equals("brunch")){
-							lunchstr = "Brunch";
-						}else{
-							lunchstr = lunch.getString("main") + "\n" + lunch.getString("veg");
-						}
-					} catch (JSONException e) {
-						e.printStackTrace();
-						lunchstr = "Error parsing lunch menu!";
+					JSONObject dinner = menutoday.getJSONObject("dinner");
+					if(dinner.getString("type").equals("none")){
+						dinnerstr = "No dinner today.";
+					}else{
+						dinnerstr = dinner.getString("main1") +
+							(dinner.optString("main2", "").trim().length()>0 ? " or\n" + dinner.getString("main2") : "") + "\n" +
+							dinner.getString("veg");
 					}
-					
-					// Dinner
-					try{
-						JSONObject dinner = menutoday.getJSONObject("dinner");
-						if(dinner.getString("type").equals("none")){
-							dinnerstr = "No dinner today.";
-						}else{
-							dinnerstr = dinner.getString("main1") + 
-								(dinner.optString("main2", "").trim().length()>0 ? " or\n" + dinner.getString("main2") : "") + "\n" +
-								dinner.getString("veg");
-						}
-					} catch (JSONException e) {
-						e.printStackTrace();
-						dinnerstr = "Error parsing dinner menu!";
-					}
-					
 				} catch (JSONException e) {
 					e.printStackTrace();
+					dinnerstr = "Error parsing dinner menu!";
 				}
-				
-				Intent i = new Intent(context, MenuDialog.class);
-				PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
-				
-				views.setOnClickPendingIntent(R.id.whole_widget, pi);
-				if(updateReady){
-					views.setViewVisibility(R.id.ll_update_prompt, View.VISIBLE);
-				}
-				
-				switch(views.getLayoutId()){
-				case R.layout.whatsforcaff_widget_tall:
-					
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			Intent i = new Intent(context, MenuDialog.class);
+			PendingIntent pi = PendingIntent.getActivity(context, 0, i, 0);
+
+			views.setOnClickPendingIntent(R.id.whole_widget, pi);
+			if(updateReady){
+				views.setViewVisibility(R.id.ll_update_prompt, View.VISIBLE);
+			}
+
+			switch(views.getLayoutId()){
+			case R.layout.whatsforcaff_widget_tall:
+
+				views.setTextViewText(R.id.txtTitle, "Lunch: " + today);
+				views.setTextViewText(R.id.txtItem, lunchstr);
+				views.setTextViewText(R.id.txtTitle2, "Dinner: " + today);
+				views.setTextViewText(R.id.txtItem2, dinnerstr);
+				break;
+
+			case R.layout.whatsforcaff_widget:
+
+				if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 14){ // after lunch so show dinner
+					views.setTextViewText(R.id.txtTitle, "Dinner: " + today);
+					views.setTextViewText(R.id.txtItem, dinnerstr);
+				}else{
 					views.setTextViewText(R.id.txtTitle, "Lunch: " + today);
 					views.setTextViewText(R.id.txtItem, lunchstr);
-					views.setTextViewText(R.id.txtTitle2, "Dinner: " + today);
-					views.setTextViewText(R.id.txtItem2, dinnerstr);
-					break;
-					
-				case R.layout.whatsforcaff_widget:
-					
-					if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 14){ // after lunch so show dinner
-						views.setTextViewText(R.id.txtTitle, "Dinner: " + today);
-						views.setTextViewText(R.id.txtItem, dinnerstr);
-					}else{
-						views.setTextViewText(R.id.txtTitle, "Lunch: " + today);
-						views.setTextViewText(R.id.txtItem, lunchstr);
-					}
-					
-					break;
 				}
-			}else{
-				
-				Intent i = new Intent(context, WFCService.class);
-				PendingIntent pi = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
-				views.setOnClickPendingIntent(R.id.whole_widget, pi);
-				
-				// There was an error, so show some error text instead of the menu 
-				switch(views.getLayoutId()){
-				case R.layout.whatsforcaff_widget_tall:
-					views.setTextViewText(R.id.txtTitle, "An error occurred");
-					try {
-						views.setTextViewText(R.id.txtItem, menu.getString("error"));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					views.setTextViewText(R.id.txtTitle2, "");
-					views.setTextViewText(R.id.txtItem2, "");
-					break;
-				case R.layout.whatsforcaff_widget:
-					views.setTextViewText(R.id.txtTitle, "An error occurred");
-					try{
-						views.setTextViewText(R.id.txtItem, menu.getString("error"));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					break;
-				}
+
+				break;
 			}
-			
-		
+		}else{
+
+			Intent i = new Intent(context, WFCService.class);
+			PendingIntent pi = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
+			views.setOnClickPendingIntent(R.id.whole_widget, pi);
+
+			// There was an error, so show some error text instead of the menu
+			switch(views.getLayoutId()){
+			case R.layout.whatsforcaff_widget_tall:
+				views.setTextViewText(R.id.txtTitle, "An error occurred");
+				try {
+					views.setTextViewText(R.id.txtItem, menu.getString("error"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				views.setTextViewText(R.id.txtTitle2, "");
+				views.setTextViewText(R.id.txtItem2, "");
+				break;
+			case R.layout.whatsforcaff_widget:
+				views.setTextViewText(R.id.txtTitle, "An error occurred");
+				try{
+					views.setTextViewText(R.id.txtItem, menu.getString("error"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				break;
+			}
+		}
+
 	}
 	
 }

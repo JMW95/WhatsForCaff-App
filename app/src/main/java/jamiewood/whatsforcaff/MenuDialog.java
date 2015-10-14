@@ -1,6 +1,8 @@
 package jamiewood.whatsforcaff;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.json.JSONArray;
@@ -49,8 +51,11 @@ public class MenuDialog extends FragmentActivity{
 		});
 		
 		SharedPreferences sp = getSharedPreferences("menustore", Context.MODE_PRIVATE);
-		
-		String jsonstr = sp.getString("menu", "");
+
+		SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
+		String dateStr = sdf.format(new Date());
+
+		String jsonstr = sp.getString(dateStr, "");
 		// show update link if there is an update
 		try {
 			JSONObject json = new JSONObject(jsonstr);

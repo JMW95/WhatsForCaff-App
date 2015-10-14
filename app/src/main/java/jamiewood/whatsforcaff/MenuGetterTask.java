@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +27,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -32,6 +35,8 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 
 	private int[] wids;
 	private Context ctx;
+
+	private Date date;
 	
 	public MenuGetterTask(Context context){
 		this.ctx = context;
@@ -44,11 +49,15 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 		
 		StringBuilder stringBuilder = new StringBuilder();
 		HttpClient httpClient = new DefaultHttpClient();
-		
-		long timestamp = new Date().getTime()/1000L;
+
+		date = new Date();
+
+		long timestamp = date.getTime()/1000L;
 		
 		try{
-			
+
+			System.out.println("Placing request to Web API...");
+
 			// set up post request to the whatsforcaff api
 			HttpPost httpPost = new HttpPost("https://hypernerd.co.uk/caff/api");
 			List<NameValuePair> postData = new ArrayList<NameValuePair>();
@@ -122,15 +131,17 @@ public class MenuGetterTask extends AsyncTask<Object, Void, JSONObject>{
 			}catch(JSONException e){ e.printStackTrace(); }
 		}
 		
-		ed.putString("menu", result.toString());
-		ed.commit();
-		
 		if(result.has("error")){
 			try {
 				Toast.makeText(ctx, "ERROR: " + result.getString("error"), Toast.LENGTH_LONG).show();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+		}else{
+			SimpleDateFormat sdf = new SimpleDateFormat("'menu'_dd_MM_yyyy");
+			String dateStr = sdf.format(date);
+			ed.putString(dateStr, result.toString());
+			ed.commit();
 		}
 		
 		AppWidgetManager awm = AppWidgetManager.getInstance(ctx);
