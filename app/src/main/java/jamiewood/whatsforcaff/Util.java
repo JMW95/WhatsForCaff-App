@@ -7,7 +7,7 @@ import java.util.GregorianCalendar;
 
 public class Util {
 
-    public static String VERSION = "0.62";
+    public static String VERSION = "0.63";
     public static String SHARED_PREFS_NAME = "menustore";
 
     public static String getMenuDateString(){
