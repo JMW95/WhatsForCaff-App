@@ -154,6 +154,11 @@ public class MenuDialog extends FragmentActivity{
 					}else{
 						rootView.findViewById(R.id.tbl_row_lunch_brainfood).setVisibility(View.GONE);
 					}
+					if(lunch.optString("deal", "").trim().length()>0){ // check if there is a daily deal
+						((TextView)rootView.findViewById(R.id.lbl_lunch_dailydeal)).setText(lunch.getString("deal"));
+					}else{
+						rootView.findViewById(R.id.tbl_row_lunch_dailydeal).setVisibility(View.GONE);
+					}
 					if(lunch.optString("soup", "").trim().length()>0){ // check if there is a soup
 						((TextView)rootView.findViewById(R.id.lbl_lunch_soup)).setText(lunch.getString("soup"));
 					}else{
@@ -191,7 +196,12 @@ public class MenuDialog extends FragmentActivity{
 				String dinnerTitleStr = menu.getString("day") + ": ";
 				if(dinner.optString("type", "dinner").equals("dinner")){
 					dinnerTitleStr += "Dinner";
-					
+
+					if(dinner.optString("deal", "").trim().length()>0){ // check if there is a daily deal
+						((TextView)rootView.findViewById(R.id.lbl_dinner_dailydeal)).setText(dinner.getString("deal"));
+					}else{
+						rootView.findViewById(R.id.tbl_row_dinner_dailydeal).setVisibility(View.GONE);
+					}
 					if(dinner.optString("soup", "").trim().length()>0){ // check if there is a soup
 						((TextView)rootView.findViewById(R.id.lbl_dinner_soup)).setText(dinner.getString("soup"));
 					}else{
